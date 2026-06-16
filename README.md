@@ -2,7 +2,7 @@
 
 The frontend for the Inventory Management System, built with **React** and **Vite**.
 
-> ⚠️ This app requires the [Backend API](https://github.com/<your-backend-repo>) to be running before use.
+> ⚠️ This app requires the [Backend API]([https://github.com/NimayKa/inventory-management-be]) to be running before use.
 
 ---
 
@@ -30,7 +30,7 @@ The frontend for the Inventory Management System, built with **React** and **Vit
 ### 1. Clone the repository
 
 ```bash
-git clone <your-frontend-repo-url> inventory-frontend
+git clone https://github.com/NimayKa/inventory-management-fe inventory-frontend
 cd inventory-frontend
 ```
 
