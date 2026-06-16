@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react"; 
 import api from '../../api/axios';
+import SEO from "../../components/seo/SEO";
 
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -119,6 +120,12 @@ export function Inventory() {
 
   return (
     <div className="p-6 w-full">
+      <SEO 
+                      title="Inventory Management By AkYamin"
+                      desc="Assessment Test Project"
+                      url={"localhost"}
+                      image={``} 
+      />
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold">Inventory</h1>

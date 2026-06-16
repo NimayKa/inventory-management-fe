@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import api from '../../api/axios';
 import { ViewItem } from '../../components/inventory/ViewItem';
+import SEO from '../../components/seo/SEO';
 
 export function SearchResult() {
   const [searchParams] = useSearchParams();
@@ -52,6 +53,12 @@ export function SearchResult() {
 
   return (
     <div className="p-6 w-full">
+      <SEO 
+                      title="Inventory Management By AkYamin"
+                      desc="Assessment Test Project"
+                      url={"localhost"}
+                      image={``} 
+      />
       <div className="mb-6">
         <h1 className="text-xl font-semibold">Search Results</h1>
         <p className="text-sm mt-0.5 text-gray-500">

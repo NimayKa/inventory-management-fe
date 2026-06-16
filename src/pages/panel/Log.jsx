@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Modal, Button, Text, Badge } from '@mantine/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import api from '../../api/axios';
+import SEO from '../../components/seo/SEO';
 
 export function LogPage() {
   const [logs, setLogs] = useState([]);
@@ -66,6 +67,12 @@ export function LogPage() {
 
   return (
     <div className="p-6 w-full">
+      <SEO 
+                      title="Inventory Management By AkYamin"
+                      desc="Assessment Test Project"
+                      url={"localhost"}
+                      image={``} 
+      />
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold">Inventory Audit Logs</h1>

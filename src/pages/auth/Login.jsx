@@ -1,7 +1,8 @@
 import { Input, Label } from '@heroui/react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../api/axios'; // Adjust path depending on where your file is located
+import api from '../../api/axios';
+import SEO from '../../components/seo/SEO'
 
 export default function Login() {
     const [username, setUsername] = useState('');
@@ -41,6 +42,12 @@ export default function Login() {
     return (
         <>
         <div className='flex flex-col min-h-[80vh] w-full items-center justify-center p-4'>
+            <SEO 
+                            title="Inventory Management By AkYamin"
+                            desc="Assessment Test Project"
+                            url={"https://invmng.nmyk.space"}
+                            image={``} 
+            />
             <form onSubmit={handleLogin} className='w-full max-w-md items-center justify-center flex flex-col gap-y-6'>
                 
                 <div className='text-center mb-4'>
