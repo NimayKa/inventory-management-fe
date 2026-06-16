@@ -1,5 +1,5 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Outlet } from 'react-router';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
+import api from '../api/axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
@@ -8,14 +8,36 @@ import { fab } from '@fortawesome/free-brands-svg-icons';
 library.add(fas, far, fab);
 
 export function Navbar() {
+  const navigate = useNavigate();
   const location = useLocation();
+
+  const storedUser = localStorage.getItem('user');
+  const user = storedUser ? JSON.parse(storedUser) : null;
+  const isAdmin = user?.role === 'admin';
+
+  const handleLogout = async () => {
+    try {
+      await api.post('/logout');
+    } catch (error) {
+      console.error("Backend logout failed or token already expired:", error);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/', { replace: true });
+    }
+  };
 
   const navItems = [
     { label: 'Dashboard', href: '/dashboard', icon: 'gauge-high' },
     { label: 'Inventory', href: '/inventory', icon: 'boxes-stacked' },
-    { label: 'Log', href: '/log', icon: 'clock-rotate-left' },
-    { label: 'Report a Bug', href: '/report', icon: 'circle-exclamation' },
   ];
+
+  if (isAdmin) {
+    navItems.push(
+      { label: 'Log', href: '/logs', icon: 'clock-rotate-left' }, 
+      { label: 'Staff Management', href: '/staff', icon: 'user' }
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -53,7 +75,7 @@ export function Navbar() {
 
         <div className="px-3 py-4 border-t border-cyan-700">
           <button
-            onClick={() => {/* handle logout */}}
+            onClick={handleLogout}
             className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-red-500/10 hover:text-red-400 transition-all duration-150"
           >
             <FontAwesomeIcon icon="right-from-bracket" className="w-4 h-4" />

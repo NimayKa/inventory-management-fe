@@ -1,7 +1,18 @@
+import { useEffect, useState } from 'react';
+import api from '../../api/axios';
+
 export function Dashboard() {
-    return(
-        <>
-        <div className="bg-red-500 w-full">test</div>
-        </>
-    )
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    api.get('/test')
+      .then(res => setMessage(res.data.message))
+      .catch(err => console.error('Error:', err));
+  }, []);
+
+  return (
+    <div>
+      <h1>{message || 'Loading...'}</h1>
+    </div>
+  );
 }

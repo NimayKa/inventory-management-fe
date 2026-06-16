@@ -1,7 +1,18 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react"; 
+import api from '../../api/axios';
+
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
+
+import { SearchBar } from "../../components/Searchbar";
+import { AddItem } from "../../components/inventory/AddItem";
+import { ViewItem } from "../../components/inventory/ViewItem";
+import { EditItem } from "../../components/inventory/EditItem";
+import { DeleteItem } from "../../components/inventory/DeleteItem";
+
+
 library.add(fas);
 
 const COLUMNS = [
@@ -26,12 +37,38 @@ function SkeletonRow() {
 }
 
 export function Inventory() {
-  const [items] = useState([]);
-  const [isLoading] = useState(true);
+
+  const [items, setItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null); 
   const [sortDescriptor, setSortDescriptor] = useState({
     column: "name",
     direction: "ascending",
   });
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const handleItemAdded = (newItem) => {
+    setItems((prevItems) => [newItem, ...prevItems]);
+  };
+
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        setIsLoading(true);
+        const response = await api.get('/inventories');
+        
+        const fetchedData = response.data.data ? response.data.data : response.data;
+        setItems(fetchedData);
+      } catch (err) {
+        console.error("Error fetching inventory:", err);
+        setError("Failed to load inventory items. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInventory();
+  }, []);
 
   const sortedItems = useMemo(() => {
     if (!items.length) return [];
@@ -57,12 +94,27 @@ export function Inventory() {
     console.log("Delete", id);
   };
 
-  const handleView = (id) => {
-    console.log("View", id);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+
+  const handleOpenViewModal = (item) => {
+    setSelectedItem(item);
+    setIsViewOpen(true);   
   };
 
-  const handleEdit = (id) => {
-    console.log("Edit", id);
+  const [editingItem, setEditingItem] = useState(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+
+  const handleItemUpdated = (updatedItem) => {
+    setItems((prevItems) =>
+      prevItems.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+    );
+  };
+
+  const [deletingItem, setDeletingItem] = useState(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const handleItemDeleted = (deletedId) => {
+    setItems((prevItems) => prevItems.filter((item) => item.id !== deletedId));
   };
 
   return (
@@ -72,14 +124,24 @@ export function Inventory() {
           <h1 className="text-xl font-semibold">Inventory</h1>
           <p className="text-sm mt-0.5">Manage your stock items</p>
         </div>
-        <button className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+        >
           <FontAwesomeIcon icon="plus" className="w-3.5 h-3.5" />
           Add Item
         </button>
       </div>
+      
+      {error && (
+        <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+          {error}
+        </div>
+      )}
 
       {/* Table */}
-      <div className="rounded-xl border  overflow-hidden">
+      <div className="rounded-xl border overflow-hidden">
+        <SearchBar onSearch={(query) => console.log("Searching for: ", query)} />
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -125,7 +187,6 @@ export function Inventory() {
               {isLoading ? (
                 [...Array(6)].map((_, i) => <SkeletonRow key={i} />)
               ) : sortedItems.length === 0 ? (
-        
                 <tr>
                   <td colSpan={6} className="px-4 py-16 text-center">
                     <div className="flex flex-col items-center gap-3 text-gray-500">
@@ -142,30 +203,36 @@ export function Inventory() {
                     className="border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors"
                   >
                     <td className="px-4 py-3 text-gray-400 font-mono text-xs">{item.id}</td>
-                    <td className="px-4 py-3 text-white font-medium">{item.name}</td>
+                    <td className="px-4 py-3 font-medium">{item.name}</td>
                     <td className="px-4 py-3 text-gray-400 max-w-50 truncate">{item.description}</td>
-                    <td className="px-4 py-3 text-white">{item.quantity}</td>
-                    <td className="px-4 py-3 text-white">${Number(item.price).toFixed(2)}</td>
+                    <td className="px-4 py-3">{item.quantity}</td>
+                    <td className="px-4 py-3">${Number(item.price).toFixed(2)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleView(item.id)}
-                          title="View"
-                          className="p-1.5 rounded-md text-gray-400 hover:text-blue-400 hover:bg-blue-400/10 transition-colors"
+                        <button 
+                          onClick={() => handleOpenViewModal(item)}
+                          className="p-1.5 text-gray-500 hover:text-cyan-700 hover:bg-cyan-50 rounded-lg transition-colors"
+                          title="View Item Details"
                         >
                           <FontAwesomeIcon icon="eye" className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => handleEdit(item.id)}
-                          title="Edit"
-                          className="p-1.5 rounded-md text-gray-400 hover:text-orange-400 hover:bg-orange-400/10 transition-colors"
+                          onClick={() => {
+                            setEditingItem(item);
+                            setIsEditOpen(true);
+                          }}
+                          className="p-1.5 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                          title="Edit Item"
                         >
                           <FontAwesomeIcon icon="pen-to-square" className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => handleDelete(item.id)}
-                          title="Delete"
-                          className="p-1.5 rounded-md text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                          onClick={() => {
+                            setDeletingItem(item);
+                            setIsDeleteOpen(true);
+                          }}
+                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete Item"
                         >
                           <FontAwesomeIcon icon="trash" className="w-3.5 h-3.5" />
                         </button>
@@ -185,6 +252,40 @@ export function Inventory() {
           </p>
         </div>
       </div>
+
+      <ViewItem 
+        isOpen={isViewOpen} 
+        onClose={() => {
+          setIsViewOpen(false);
+          setSelectedItem(null);
+        }} 
+        item={selectedItem}
+      />
+      <AddItem 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onItemAdded={handleItemAdded}
+      />
+
+      <EditItem
+        isOpen={isEditOpen}
+        onClose={() => {
+          setIsEditOpen(false);
+          setEditingItem(null);
+        }}
+        item={editingItem}
+        onItemUpdated={handleItemUpdated}
+      />
+
+      <DeleteItem
+        isOpen={isDeleteOpen}
+        onClose={() => {
+          setIsDeleteOpen(false);
+          setDeletingItem(null);
+        }}
+        item={deletingItem}
+        onItemDeleted={handleItemDeleted}
+      />
     </div>
   );
 }
